@@ -1,0 +1,46 @@
+﻿# Ігноруємо файли конфігурації та секретні ключі
+.env
+config.json
+settings.py
+.vs
+
+# Ігноруємо базу даних
+*.sqlite
+*.sqlite3
+db/
+*.db
+
+# Ігноруємо віртуальне середовище Python
+venv/
+.env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ігноруємо логи та кеш
+logs/
+*.log
+*.out
+*.err
+*.pid
+
+# Ігноруємо залежності (якщо використовуєте poetry/pipenv)
+poetry.lock
+Pipfile.lock
+
+# Ігноруємо файли IDE та редакторів коду
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+
+# Ігноруємо Docker файли (якщо є)
+.dockerignore
+docker-compose.override.yml
+
+# Ігноруємо Node.js залежності (якщо є фронтенд)
+node_modules/
+yarn.lock
+package-lock.json
