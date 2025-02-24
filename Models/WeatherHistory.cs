@@ -8,5 +8,7 @@ namespace FasterWeatherBot.Models
 {
     internal class WeatherHistory
     {
+
+
     }
 }

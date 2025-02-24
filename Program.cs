@@ -4,6 +4,7 @@ using Telegram.Bot.Types.Enums;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Exceptions;
+using FasterWeatherBot.Services;
 
 class Program
 {
@@ -12,6 +13,8 @@ class Program
 
     // Это объект с настройками работы бота. Здесь мы будем указывать, какие типы Update мы будем получать, Timeout бота и так далее.
     private static ReceiverOptions _receiverOptions;
+
+    private 
 
     static async Task Main()
     {
@@ -22,6 +25,7 @@ class Program
             AllowedUpdates = new[] // Тут указываем типы получаемых Update`ов, о них подробнее расказано тут https://core.telegram.org/bots/api#update
             {
                 UpdateType.Message, // Сообщения (текст, фото/видео, голосовые/видео сообщения и т.д.)
+                UpdateType.CallbackQuery // Inline кнопки
             }
         };
 
@@ -29,7 +33,7 @@ class Program
 
         // UpdateHander - обработчик приходящих Update`ов
         // ErrorHandler - обработчик ошибок, связанных с Bot API
-        _botClient.StartReceiving(UpdateHandler, ErrorHandler, _receiverOptions, cts.Token); // Запускаем бота
+        _botClient.StartReceiving(Handler.UpdateHandler, Handler.ErrorHandler, _receiverOptions, cts.Token); // Запускаем бота
 
         var me = await _botClient.GetMeAsync(); // Создаем переменную, в которую помещаем информацию о нашем боте.
         Console.WriteLine($"{me.FirstName} запущен!");
