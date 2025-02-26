@@ -8,36 +8,32 @@ using FasterWeatherBot.Services;
 
 class Program
 {
-    // Это клиент для работы с Telegram Bot API, который позволяет отправлять сообщения, управлять ботом, подписываться на обновления и многое другое.
-    private static ITelegramBotClient _botClient;
+  private static ITelegramBotClient _botClient;
 
-    // Это объект с настройками работы бота. Здесь мы будем указывать, какие типы Update мы будем получать, Timeout бота и так далее.
-    private static ReceiverOptions _receiverOptions;
+  private static ReceiverOptions _receiverOptions;
 
     private 
 
     static async Task Main()
     {
 
-        _botClient = new TelegramBotClient("7918056211:AAGd-cQQDTd2gnfUlJtTZF5jzeflRP3At3w"); // Присваиваем нашей переменной значение, в параметре передаем Token, полученный от BotFather
-        _receiverOptions = new ReceiverOptions // Также присваем значение настройкам бота
+        _botClient = new TelegramBotClient("7918056211:AAGd-cQQDTd2gnfUlJtTZF5jzeflRP3At3w");
+        _receiverOptions = new ReceiverOptions 
         {
-            AllowedUpdates = new[] // Тут указываем типы получаемых Update`ов, о них подробнее расказано тут https://core.telegram.org/bots/api#update
+            AllowedUpdates = new[]
             {
-                UpdateType.Message, // Сообщения (текст, фото/видео, голосовые/видео сообщения и т.д.)
-                UpdateType.CallbackQuery // Inline кнопки
+                UpdateType.Message, 
+                UpdateType.CallbackQuery // Inline buttons
             }
         };
 
         using var cts = new CancellationTokenSource();
 
-        // UpdateHander - обработчик приходящих Update`ов
-        // ErrorHandler - обработчик ошибок, связанных с Bot API
-        _botClient.StartReceiving(Handler.UpdateHandler, Handler.ErrorHandler, _receiverOptions, cts.Token); // Запускаем бота
+        _botClient.StartReceiving(HandlerServices.UpdateHandler, HandlerServices.ErrorHandler, _receiverOptions, cts.Token); // Start bot
 
-        var me = await _botClient.GetMeAsync(); // Создаем переменную, в которую помещаем информацию о нашем боте.
+        var me = await _botClient.GetMeAsync();
         Console.WriteLine($"{me.FirstName} запущен!");
 
-        await Task.Delay(-1); // Устанавливаем бесконечную задержку, чтобы наш бот работал постоянно
+        await Task.Delay(-1); 
     }
 }
