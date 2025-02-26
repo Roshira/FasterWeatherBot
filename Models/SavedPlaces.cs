@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace FasterWeatherBot.Models
 {
-    internal class SavedPlace
+    internal class SavedPlaces
     {
+        public long IdUser { get; set; }
+        public string SavedPlace {  get; set; }
+        
     }
 }

@@ -12,5 +12,6 @@ namespace FasterWeatherBot.Models
         public string UserName { get; set; }
         public string LanguageCode { get; set; }
         public bool IsBot { get; set; }
+
     }
 }

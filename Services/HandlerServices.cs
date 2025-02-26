@@ -9,11 +9,14 @@ using Telegram.Bot.Types;
 using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
 using FasterWeatherBot.Models;
+using Microsoft.AspNetCore.SignalR;
 
 namespace FasterWeatherBot.Services
 {
     internal class HandlerServices
     {
+
+        private static Dictionary<long, bool> waitingForCity = new Dictionary<long, bool>();
         public static async Task UpdateHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             try
@@ -24,61 +27,86 @@ namespace FasterWeatherBot.Services
                     case UpdateType.Message:
                         {
                             var message = update.Message;
+                            long chatId = message.Chat.Id;
+
+                            if (waitingForCity.ContainsKey(chatId) && waitingForCity[chatId])
+                            {
+                                string city = message.Text.Trim();
+
+                                if (string.IsNullOrEmpty(city))
+                                {
+                                    await botClient.SendTextMessageAsync(chatId, "⚠ Enter the correct city name.");
+                                    return;
+                                }
+
+                                string weatherInfo = await WeatherServices.GetWeatherAsync(city, chatId);
+
+                                await botClient.SendTextMessageAsync(chatId, weatherInfo, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
+
+                                waitingForCity.Remove(chatId);
+                                return;
+                            }
+
+                            var replyKeyboard = new ReplyKeyboardMarkup(new[]
+                            {
+        new KeyboardButton("Start")
+    })
+                            {
+                                ResizeKeyboard = true,
+                                OneTimeKeyboard = false 
+                            };
 
                             var user = message.From;
+                            var userId = user.Id;
 
-                            Console.WriteLine($"{user.FirstName} ({user.Id}) Writed massege: {message.Text}");
+                            bool userExists = await LoginUser.CheckIfUserExists(userId);
 
-                            var chat = message.Chat;
+                            var inlineKeyboard = new InlineKeyboardMarkup(
+                                new List<InlineKeyboardButton[]>()
+                                {
+                new InlineKeyboardButton[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Weather", "buttonWeather"),
+                    InlineKeyboardButton.WithCallbackData("Your saved place", "button1"),
+                },
+                new InlineKeyboardButton[]
+                {
+                    InlineKeyboardButton.WithCallbackData("Add place", "button2"),
+                    userExists ? null : InlineKeyboardButton.WithCallbackData("Login", "buttonLogin"),
+                }.Where(x => x != null).ToArray(),
+                                });
 
-                            switch (message.Type)
-                            {
-                                case MessageType.Text:
-                                    {
-                                        var inlineKeyboard = new InlineKeyboardMarkup(
-                                            new List<InlineKeyboardButton[]>()
-                                            {
+                            // Відправляємо повідомлення з кнопками
+                            await botClient.SendTextMessageAsync(
+                                message.Chat.Id,
+                                userExists ? "Welcome back!" : "Welcome back! Please log in.",
+                                replyMarkup: inlineKeyboard
+                            );
 
-
-                                        new InlineKeyboardButton[]
-                                        {
-                                            InlineKeyboardButton.WithUrl("Weather", "https://habr.com/"),
-                                            InlineKeyboardButton.WithCallbackData("Your saved place", "button1"),
-                                        },
-                                        new InlineKeyboardButton[]
-                                        {
-                                            InlineKeyboardButton.WithCallbackData("Add place", "button2"),
-                                            InlineKeyboardButton.WithCallbackData("Login", "button3"),
-                                        },
-                                            });
-                                        await botClient.SendTextMessageAsync(
-                                       chat.Id,
-                                       "Это inline клавиатура!",
-                                       replyMarkup: inlineKeyboard);
-                                        return;
-                                    }
-                                default:
-                                    {
-                                        await botClient.SendTextMessageAsync(chat.Id, "Write only text");
-                                        return;
-                                    }
-                                    return;
-                            }
+                            return;
                         }
+
                     case UpdateType.CallbackQuery:
                         {
                             var callbackQuery = update.CallbackQuery;
                             var user = callbackQuery.From;
                             var chat = callbackQuery.Message.Chat;
 
-                            Console.WriteLine($"{user.FirstName} ({user.Id}) натиснув кнопку: {callbackQuery.Data}");
+                            Console.WriteLine($"{user.FirstName} ({user.Id}) Click button: {callbackQuery.Data}");
 
                             switch (callbackQuery.Data)
                             {
+                                 
+                                case "buttonWeather":
+                                    {
+                                        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
+                                        waitingForCity[chat.Id] = true;
+                                        await botClient.SendTextMessageAsync(chat.Id, "📍 Enter the name of the city for which you want to get the weather:");
+                                        return;
+                                    }
                                 case "button1":
                                     {
                                         await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
-                                        await botClient.SendTextMessageAsync(chat.Id, $"Ви натиснули на {callbackQuery.Data}");
 
 
                                         return;
@@ -87,24 +115,18 @@ namespace FasterWeatherBot.Services
                                 case "button2":
                                     {
                                         await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, "");
-                                        await botClient.SendTextMessageAsync(chat.Id, $" {callbackQuery.Data}");
 
 
                                         return;
                                     }
 
-                                case "button3":
+                                case "buttonLogin":
                                     {
-                                        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, "А це повноекранне повідомлення!", showAlert: true);
-                                        await botClient.SendTextMessageAsync(chat.Id, $"Ви натиснули на {callbackQuery.Data}");
-
-                                        // Отримуємо дані користувача
                                         string userName = callbackQuery.From.Username ?? "Unknown";
                                         string languageCode = callbackQuery.From.LanguageCode ?? "uk";
                                         bool isBot = callbackQuery.From.IsBot;
 
-                                        // Викликаємо метод авторизації
-                                        await LoginUserAsync(botClient, chat.Id, userName, languageCode, isBot);
+                                        await LoginUser.LoginUserAsync(botClient, chat.Id, userName, languageCode, isBot);
 
                                         return;
                                     }
@@ -132,21 +154,6 @@ namespace FasterWeatherBot.Services
             Console.WriteLine(ErrorMessage);
             return Task.CompletedTask;
         }
-        private static async Task LoginUserAsync(ITelegramBotClient botClient, long chatId, string userName, string languageCode, bool isBot)
-        {
-            string connectionString = "Server=(localdb)\\mssqllocaldb;Database=FasterWeatherBot;Trusted_Connection=True;";
-            var loginService = new LoginUser(connectionString);
-
-            bool isLoggedIn = await loginService.Login(chatId, userName, languageCode, isBot);
-
-            if (isLoggedIn)
-            {
-                await botClient.SendTextMessageAsync(chatId, "✅ Ви успішно авторизовані!");
-            }
-            else
-            {
-                await botClient.SendTextMessageAsync(chatId, "⚠ Помилка авторизації. Спробуйте ще раз.");
-            }
-        }
+       
     }
 }

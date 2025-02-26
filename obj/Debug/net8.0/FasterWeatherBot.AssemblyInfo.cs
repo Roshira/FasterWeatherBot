@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FasterWeatherBot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b39602a043f7491c958f669c52834ef4eacae3e5")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2d3f585f8a2adae2011f241a79d3c6d13a784171")]
 [assembly: System.Reflection.AssemblyProductAttribute("FasterWeatherBot")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FasterWeatherBot")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

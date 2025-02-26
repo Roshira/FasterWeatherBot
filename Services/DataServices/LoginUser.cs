@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Dapper;
+using Telegram.Bot;
 
 namespace FasterWeatherBot.Models
 {
@@ -39,6 +40,33 @@ namespace FasterWeatherBot.Models
                 return false;
             }
         }
+        internal static async Task<bool> CheckIfUserExists(long userId)
+        {
+            string connectionString = "Server=(localdb)\\mssqllocaldb;Database=FasterWeatherBot;Trusted_Connection=True;";
+            using (var db = new SqlConnection(connectionString))
+            {
+                var user = await db.QueryFirstOrDefaultAsync<Users>(
+                    "SELECT * FROM Users WHERE Id = @Id", new { Id = userId });
 
+                return user != null;
+            }
+        }
+
+        internal static async Task LoginUserAsync(ITelegramBotClient botClient, long chatId, string userName, string languageCode, bool isBot)
+        {
+            string connectionString = "Server=(localdb)\\mssqllocaldb;Database=FasterWeatherBot;Trusted_Connection=True;";
+            var loginService = new LoginUser(connectionString);
+
+            bool isLoggedIn = await loginService.Login(chatId, userName, languageCode, isBot);
+
+            if (isLoggedIn)
+            {
+                await botClient.SendTextMessageAsync(chatId, "✅ You are successfully authorized!");
+            }
+            else
+            {
+                await botClient.SendTextMessageAsync(chatId, "⚠ Authorization error. Try again.");
+            }
+        }
     }
 }
