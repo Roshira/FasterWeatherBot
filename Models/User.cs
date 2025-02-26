@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace FasterWeatherBot.Models
 {
-    internal class User
+    internal class Users
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         public string UserName { get; set; }
-        public int LanguageCode { get; set; }
+        public string LanguageCode { get; set; }
         public bool IsBot { get; set; }
     }
 }
