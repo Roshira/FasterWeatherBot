@@ -28,7 +28,7 @@ public class WeatherServices
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    return "❌ Failed to get weather data. Check the correctness of the city name.";
+                    return "❌ Failed to get weather data. Check the correctness of the location name.";
                 }
 
                 string responseData = await response.Content.ReadAsStringAsync();
@@ -56,7 +56,7 @@ public class WeatherServices
                 };
 
                 repository.SaveWeatherHistory(weatherHistory);
-                Console.WriteLine("Дані успішно збережено!");
+                Console.WriteLine("data saved!");
 
                 return $"🌦 Weather in {city}:\n" +
                        $"🌡 Temperature: {temperature}°C (Feels like {feelsLike}°C)\n" +

@@ -59,11 +59,7 @@ namespace FasterWeatherBot.Models
 
             bool isLoggedIn = await loginService.Login(chatId, userName, languageCode, isBot);
 
-            if (isLoggedIn)
-            {
-                await botClient.SendTextMessageAsync(chatId, "✅ You are successfully authorized!");
-            }
-            else
+            if (!isLoggedIn)
             {
                 await botClient.SendTextMessageAsync(chatId, "⚠ Authorization error. Try again.");
             }

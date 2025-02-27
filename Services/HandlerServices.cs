@@ -1,147 +1,148 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Telegram.Bot.Exceptions;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types;
 using Telegram.Bot;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 using FasterWeatherBot.Models;
-using Microsoft.AspNetCore.SignalR;
+using Telegram.Bot.Exceptions;
 
 namespace FasterWeatherBot.Services
 {
     internal class HandlerServices
     {
-
         private static Dictionary<long, bool> waitingForCity = new Dictionary<long, bool>();
+        private static Dictionary<long, bool> waitingForPlace = new Dictionary<long, bool>();
+
         public static async Task UpdateHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             try
             {
-
-                switch (update.Type)
+                if (update.Type == UpdateType.Message && update.Message is not null)
                 {
-                    case UpdateType.Message:
-                        {
-                            var message = update.Message;
-                            long chatId = message.Chat.Id;
+                    var message = update.Message;
+                    var chatId = message.Chat.Id;
+                    var text = message.Text?.Trim();
 
-                            if (waitingForCity.ContainsKey(chatId) && waitingForCity[chatId])
+                    if (string.IsNullOrEmpty(text))
+                    {
+                        await botClient.SendTextMessageAsync(chatId, "⚠Enter the correct text");
+                        return;
+                    }
+
+                    // Перевіряємо, чи користувач очікує введення міста
+                    if (waitingForCity.TryGetValue(chatId, out bool isWaiting) && isWaiting)
+                    {
+                        waitingForCity.Remove(chatId); // Видаляємо з очікування
+
+                        string weatherInfo = await WeatherServices.GetWeatherAsync(text, chatId);
+                        await botClient.SendTextMessageAsync(chatId, weatherInfo, parseMode: ParseMode.Markdown);
+                        return;
+                    }
+
+                    if (waitingForPlace.TryGetValue(chatId, out bool isWaitingPlace) && isWaitingPlace)
+                    {
+                        waitingForPlace.Remove(chatId);
+                        await SavedPlacesServices.SaveOrUpdatePlaceAsync(chatId, text);
+                        await botClient.SendTextMessageAsync(chatId, $"✅ '{text}' saved successfully!");
+                        return;
+                    }
+
+
+                    var user = message.From;
+                    var userId = user.Id;
+                    bool userExists = await LoginUser.CheckIfUserExists(userId);
+
+                    switch (text)
+                    {
+                        case "Weather":
+                            waitingForCity[chatId] = true;
+                            await botClient.SendTextMessageAsync(chatId, "📍Enter location to get the weather:");
+                            return;
+
+                        case "Your saved place":
+                            var savedPlaces = await SavedPlacesServices.GetAllSavedPlacesAsync();
+                            var userSavedPlace = savedPlaces.FirstOrDefault(sp => sp.UserId == chatId);
+
+                            if (userSavedPlace.SavedPlace != null)
                             {
-                                string city = message.Text.Trim();
-
-                                if (string.IsNullOrEmpty(city))
-                                {
-                                    await botClient.SendTextMessageAsync(chatId, "⚠ Enter the correct city name.");
-                                    return;
-                                }
-
-                                string weatherInfo = await WeatherServices.GetWeatherAsync(city, chatId);
-
-                                await botClient.SendTextMessageAsync(chatId, weatherInfo, parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown);
-
-                                waitingForCity.Remove(chatId);
-                                return;
+                                string weatherInfo = await WeatherServices.GetWeatherAsync(userSavedPlace.SavedPlace, chatId);
+                                await botClient.SendTextMessageAsync(chatId, weatherInfo, parseMode: ParseMode.Markdown);
                             }
-
-                            var replyKeyboard = new ReplyKeyboardMarkup(new[]
+                            else
                             {
-        new KeyboardButton("Start")
-    })
+                                await botClient.SendTextMessageAsync(chatId, "❌ You don't have saved location yet. Use 'Add place' to save one.");
+                            }
+                            return;
+
+                        case "Add place":
+                            waitingForPlace[chatId] = true;
+                            await botClient.SendTextMessageAsync(chatId, "➕ Enter the name of the location you want to add:");
+                            return;
+
+                        case "Login":
+                            string userName = user.Username ?? "Unknown";
+                            string languageCode = user.LanguageCode ?? "uk";
+                            bool isBot = user.IsBot;
+                            await LoginUser.LoginUserAsync(botClient, chatId, userName, languageCode, isBot);
+
+                            // Оновлюємо панель після логіну
+                            var newKeyboard = new ReplyKeyboardMarkup(new[]
+                            {
+                                new KeyboardButton[] { "Weather" },
+                                new KeyboardButton[] { "Your saved location" },
+                                new KeyboardButton[] { "Add location" }
+                            })
                             {
                                 ResizeKeyboard = true,
-                                OneTimeKeyboard = false 
+                                OneTimeKeyboard = false
+                            };
+                            var tempMessage = await botClient.SendTextMessageAsync(
+                             chatId,
+                            "✅You are successfully logged in!"
+                             );
+                            await botClient.SendTextMessageAsync(
+           chatId,
+           "",
+           replyMarkup: newKeyboard
+       );
+                            return;
+
+                        default:
+                            var replyKeyboard = new ReplyKeyboardMarkup(new[]
+                            {
+                                new KeyboardButton[] { "Weather" },
+                                new KeyboardButton[] { "Your saved location" },
+                                new KeyboardButton[] { "Add location" }
+                            })
+                            {
+                                ResizeKeyboard = true,
+                                OneTimeKeyboard = false
                             };
 
-                            var user = message.From;
-                            var userId = user.Id;
-
-                            bool userExists = await LoginUser.CheckIfUserExists(userId);
-
-                            var inlineKeyboard = new InlineKeyboardMarkup(
-                                new List<InlineKeyboardButton[]>()
-                                {
-                new InlineKeyboardButton[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Weather", "buttonWeather"),
-                    InlineKeyboardButton.WithCallbackData("Your saved place", "button1"),
-                },
-                new InlineKeyboardButton[]
-                {
-                    InlineKeyboardButton.WithCallbackData("Add place", "button2"),
-                    userExists ? null : InlineKeyboardButton.WithCallbackData("Login", "buttonLogin"),
-                }.Where(x => x != null).ToArray(),
-                                });
-
-                            // Відправляємо повідомлення з кнопками
-                            await botClient.SendTextMessageAsync(
-                                message.Chat.Id,
-                                userExists ? "Welcome back!" : "Welcome back! Please log in.",
-                                replyMarkup: inlineKeyboard
-                            );
-
-                            return;
-                        }
-
-                    case UpdateType.CallbackQuery:
-                        {
-                            var callbackQuery = update.CallbackQuery;
-                            var user = callbackQuery.From;
-                            var chat = callbackQuery.Message.Chat;
-
-                            Console.WriteLine($"{user.FirstName} ({user.Id}) Click button: {callbackQuery.Data}");
-
-                            switch (callbackQuery.Data)
+                            if (!userExists)
                             {
-                                 
-                                case "buttonWeather":
-                                    {
-                                        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
-                                        waitingForCity[chat.Id] = true;
-                                        await botClient.SendTextMessageAsync(chat.Id, "📍 Enter the name of the city for which you want to get the weather:");
-                                        return;
-                                    }
-                                case "button1":
-                                    {
-                                        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id);
-
-
-                                        return;
-                                    }
-
-                                case "button2":
-                                    {
-                                        await botClient.AnswerCallbackQueryAsync(callbackQuery.Id, "");
-
-
-                                        return;
-                                    }
-
-                                case "buttonLogin":
-                                    {
-                                        string userName = callbackQuery.From.Username ?? "Unknown";
-                                        string languageCode = callbackQuery.From.LanguageCode ?? "uk";
-                                        bool isBot = callbackQuery.From.IsBot;
-
-                                        await LoginUser.LoginUserAsync(botClient, chat.Id, userName, languageCode, isBot);
-
-                                        return;
-                                    }
+                                replyKeyboard.Keyboard = replyKeyboard.Keyboard.Append(new KeyboardButton[] { "Login" }).ToArray();
                             }
 
+                            await botClient.SendTextMessageAsync(
+                                chatId,
+                                userExists ? "Welcome back!" : "Welcome! Please login.",
+                                replyMarkup: replyKeyboard
+                            );
                             return;
-                        }
-
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine($"Помилка: {ex}");
             }
         }
+
         public static Task ErrorHandler(ITelegramBotClient botClient, Exception error, CancellationToken cancellationToken)
         {
             var ErrorMessage = error switch

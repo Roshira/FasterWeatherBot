@@ -24,3 +24,6 @@ C:\Users\DELL\source\repos\FasterWeatherBot\obj\Debug\net8.0\refint\FasterWeathe
 C:\Users\DELL\source\repos\FasterWeatherBot\obj\Debug\net8.0\FasterWeatherBot.pdb
 C:\Users\DELL\source\repos\FasterWeatherBot\obj\Debug\net8.0\FasterWeatherBot.genruntimeconfig.cache
 C:\Users\DELL\source\repos\FasterWeatherBot\obj\Debug\net8.0\ref\FasterWeatherBot.dll
+C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Npgsql.dll
