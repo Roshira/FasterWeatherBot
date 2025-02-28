@@ -27,3 +27,7 @@ C:\Users\DELL\source\repos\FasterWeatherBot\obj\Debug\net8.0\ref\FasterWeatherBo
 C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
 C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
 C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Npgsql.dll
+C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Microsoft.OpenApi.dll
+C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll

@@ -63,7 +63,7 @@ namespace FasterWeatherBot.Services
                             await botClient.SendTextMessageAsync(chatId, "📍Enter location to get the weather:");
                             return;
 
-                        case "Your saved place":
+                        case "Your saved location":
                             var savedPlaces = await SavedPlacesServices.GetAllSavedPlacesAsync();
                             var userSavedPlace = savedPlaces.FirstOrDefault(sp => sp.UserId == chatId);
 
@@ -78,7 +78,7 @@ namespace FasterWeatherBot.Services
                             }
                             return;
 
-                        case "Add place":
+                        case "Add location":
                             waitingForPlace[chatId] = true;
                             await botClient.SendTextMessageAsync(chatId, "➕ Enter the name of the location you want to add:");
                             return;

@@ -2,35 +2,63 @@
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot;
 using FasterWeatherBot.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 
 class Program
 {
-  private static ITelegramBotClient _botClient;
+    private static ITelegramBotClient _botClient;
 
-  private static ReceiverOptions _receiverOptions;
+    private static ReceiverOptions _receiverOptions;
 
-    private 
-
-    static async Task Main()
+    public static async Task Main(string[] args)
     {
+        var builder = WebApplication.CreateBuilder(args);
 
-        _botClient = new TelegramBotClient("7918056211:AAGd-cQQDTd2gnfUlJtTZF5jzeflRP3At3w");
-        _receiverOptions = new ReceiverOptions 
+        var botToken = new TelegramBotClient("7918056211:AAGd-cQQDTd2gnfUlJtTZF5jzeflRP3At3w");
+
+        // Додаємо його у DI-контейнер
+        builder.Services.AddSingleton<ITelegramBotClient>(_ => botToken);
+        builder.Services.AddControllers();
+
+        // Додаємо Swagger
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen(c =>
         {
-            AllowedUpdates = new[]
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "FasterWeatherBot API", Version = "v1" });
+        });
+
+        var app = builder.Build();
+
+        // Включаємо Swagger тільки в режимі розробки
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                UpdateType.Message, 
-                UpdateType.CallbackQuery // Inline buttons
-            }
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "FasterWeatherBot API v1");
+                c.RoutePrefix = string.Empty; // Відкриває Swagger на головній сторінці
+            });
+        }
+
+        app.UseAuthorization();
+        app.MapControllers();
+
+        // Запускаємо бота
+        var botClient = app.Services.GetRequiredService<ITelegramBotClient>();
+        var receiverOptions = new ReceiverOptions
+        {
+            AllowedUpdates = new[] { UpdateType.Message, UpdateType.CallbackQuery }
         };
 
         using var cts = new CancellationTokenSource();
+        botClient.StartReceiving(HandlerServices.UpdateHandler, HandlerServices.ErrorHandler, receiverOptions, cts.Token);
 
-        _botClient.StartReceiving(HandlerServices.UpdateHandler, HandlerServices.ErrorHandler, _receiverOptions, cts.Token); // Start bot
-
-        var me = await _botClient.GetMeAsync();
+        var me = await botClient.GetMeAsync();
         Console.WriteLine($"{me.FirstName} запущен!");
 
-        await Task.Delay(-1); 
+        await app.RunAsync();
     }
 }
