@@ -31,3 +31,5 @@ C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Microsoft.OpenApi.d
 C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
 C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\FasterWeatherBot.xml
+C:\Users\DELL\source\repos\FasterWeatherBot\obj\Debug\net8.0\FasterWeatherBot.xml

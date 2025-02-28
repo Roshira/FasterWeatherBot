@@ -20,6 +20,13 @@ public class WeatherBotController : ControllerBase
         _botClient = botClient;
     }
 
+    /// <summary>
+    /// Gets the weather query history for a specific user.
+    /// </summary>
+    /// <param name="userId">User ID.</param>
+    /// <returns>Information about the user and their weather query history.</returns>
+    /// <response code="200">Returns the user data and query history.</response>
+    /// <response code="404">User not found.</response>
     [HttpGet("user/{userId}")]
     public async Task<IActionResult> GetUserHistory(long userId)
     {
@@ -33,7 +40,16 @@ public class WeatherBotController : ControllerBase
 
         return Ok(new { user, history });
     }
-
+    /// <summary>
+    /// Sends weather information to the specified user or all users.
+    /// </summary>
+    /// <param name="userId">User ID (optional). If not specified, the message is sent to all users.</param>
+    /// <param name="city">The city for which weather information is required.</param>
+    /// <returns>A message indicating success or failure.</returns>
+    /// <response code="200">Weather sent successfully.</response>
+    /// <response code="400">City not specified.</response>
+    /// <response code="404">User not found.</response>
+    /// <response code="500">Internal server error.</response>
     [HttpPost("send-weather")]
     public async Task<IActionResult> SendWeather([FromQuery] long? userId, [FromQuery] string city)
     {

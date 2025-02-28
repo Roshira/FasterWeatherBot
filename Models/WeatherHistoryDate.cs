@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace FasterWeatherBot.Models
 {
+    /// <summary>
+    /// Weather query history model.
+    /// </summary>
     public class WeatherHistoryDate
     {
         public long UserId { get; set; }
@@ -14,7 +17,9 @@ namespace FasterWeatherBot.Models
         public string Humidity { get; set; }
 
         public string Description { get; set; }
-
+        /// <summary>
+        /// Date of request.
+        /// </summary>
         public string TimeString { get; set; }
     }
 }

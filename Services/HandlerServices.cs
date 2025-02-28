@@ -14,6 +14,7 @@ namespace FasterWeatherBot.Services
 {
     internal class HandlerServices
     {
+        // Dictionaries to track users waiting for input
         private static Dictionary<long, bool> waitingForCity = new Dictionary<long, bool>();
         private static Dictionary<long, bool> waitingForPlace = new Dictionary<long, bool>();
 
@@ -29,20 +30,20 @@ namespace FasterWeatherBot.Services
 
                     if (string.IsNullOrEmpty(text))
                     {
-                        await botClient.SendTextMessageAsync(chatId, "⚠Enter the correct text");
+                        await botClient.SendTextMessageAsync(chatId, "⚠ Enter the correct text");
                         return;
                     }
 
-                    // Перевіряємо, чи користувач очікує введення міста
+                    // If the user is waiting to enter a city
                     if (waitingForCity.TryGetValue(chatId, out bool isWaiting) && isWaiting)
                     {
-                        waitingForCity.Remove(chatId); // Видаляємо з очікування
-
+                        waitingForCity.Remove(chatId);
                         string weatherInfo = await WeatherServices.GetWeatherAsync(text, chatId);
                         await botClient.SendTextMessageAsync(chatId, weatherInfo, parseMode: ParseMode.Markdown);
                         return;
                     }
 
+                    // If the user is waiting to enter a place to save
                     if (waitingForPlace.TryGetValue(chatId, out bool isWaitingPlace) && isWaitingPlace)
                     {
                         waitingForPlace.Remove(chatId);
@@ -50,7 +51,6 @@ namespace FasterWeatherBot.Services
                         await botClient.SendTextMessageAsync(chatId, $"✅ '{text}' saved successfully!");
                         return;
                     }
-
 
                     var user = message.From;
                     var userId = user.Id;
@@ -60,7 +60,7 @@ namespace FasterWeatherBot.Services
                     {
                         case "Weather":
                             waitingForCity[chatId] = true;
-                            await botClient.SendTextMessageAsync(chatId, "📍Enter location to get the weather:");
+                            await botClient.SendTextMessageAsync(chatId, "📍 Enter location to get the weather:");
                             return;
 
                         case "Your saved location":
@@ -74,7 +74,7 @@ namespace FasterWeatherBot.Services
                             }
                             else
                             {
-                                await botClient.SendTextMessageAsync(chatId, "❌ You don't have saved location yet. Use 'Add place' to save one.");
+                                await botClient.SendTextMessageAsync(chatId, "❌ You don't have a saved location yet. Use 'Add location' to save one.");
                             }
                             return;
 
@@ -84,12 +84,13 @@ namespace FasterWeatherBot.Services
                             return;
 
                         case "Login":
+                            // Log in the user
                             string userName = user.Username ?? "Unknown";
                             string languageCode = user.LanguageCode ?? "uk";
                             bool isBot = user.IsBot;
                             await LoginUser.LoginUserAsync(botClient, chatId, userName, languageCode, isBot);
 
-                            // Оновлюємо панель після логіну
+                            // Update keyboard after login
                             var newKeyboard = new ReplyKeyboardMarkup(new[]
                             {
                                 new KeyboardButton[] { "Weather" },
@@ -100,18 +101,13 @@ namespace FasterWeatherBot.Services
                                 ResizeKeyboard = true,
                                 OneTimeKeyboard = false
                             };
-                            var tempMessage = await botClient.SendTextMessageAsync(
-                             chatId,
-                            "✅You are successfully logged in!"
-                             );
-                            await botClient.SendTextMessageAsync(
-           chatId,
-           "",
-           replyMarkup: newKeyboard
-       );
+
+                            await botClient.SendTextMessageAsync(chatId, "✅ You are successfully logged in!");
+                            await botClient.SendTextMessageAsync(chatId, "", replyMarkup: newKeyboard);
                             return;
 
                         default:
+                            // Default keyboard options
                             var replyKeyboard = new ReplyKeyboardMarkup(new[]
                             {
                                 new KeyboardButton[] { "Weather" },
@@ -123,6 +119,7 @@ namespace FasterWeatherBot.Services
                                 OneTimeKeyboard = false
                             };
 
+                            // Add login button if user is not registered
                             if (!userExists)
                             {
                                 replyKeyboard.Keyboard = replyKeyboard.Keyboard.Append(new KeyboardButton[] { "Login" }).ToArray();
@@ -139,10 +136,11 @@ namespace FasterWeatherBot.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Помилка: {ex}");
+                Console.WriteLine($"Error: {ex}");
             }
         }
 
+        // Handles bot errors
         public static Task ErrorHandler(ITelegramBotClient botClient, Exception error, CancellationToken cancellationToken)
         {
             var ErrorMessage = error switch
@@ -155,6 +153,5 @@ namespace FasterWeatherBot.Services
             Console.WriteLine(ErrorMessage);
             return Task.CompletedTask;
         }
-       
     }
 }

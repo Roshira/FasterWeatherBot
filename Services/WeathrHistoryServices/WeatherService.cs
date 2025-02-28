@@ -9,7 +9,8 @@ using FasterWeatherBot.Models;
 
 public class WeatherServices
 {
-    private static readonly string apiKey = "697d66fe6ada429bb0f761f1dce55573"; 
+    // OpenWeather API key and URL
+    private static readonly string apiKey = "697d66fe6ada429bb0f761f1dce55573";
     private static readonly string apiUrl = "https://api.openweathermap.org/data/2.5/weather?q={0}&appid={1}&units=metric&lang=en";
     private readonly string _connectionString;
 
@@ -17,12 +18,14 @@ public class WeatherServices
     {
         _connectionString = connectionString;
     }
+
     public static async Task<string> GetWeatherAsync(string city, long UserId)
     {
         try
         {
             using (HttpClient client = new HttpClient())
             {
+                // Send request to the weather API
                 string requestUrl = string.Format(apiUrl, city, apiKey);
                 HttpResponseMessage response = await client.GetAsync(requestUrl);
 
@@ -31,6 +34,7 @@ public class WeatherServices
                     return "❌ Failed to get weather data. Check the correctness of the location name.";
                 }
 
+                // Parse JSON response
                 string responseData = await response.Content.ReadAsStringAsync();
                 JObject weatherData = JObject.Parse(responseData);
 
@@ -39,6 +43,7 @@ public class WeatherServices
                 string feelsLike = weatherData["main"]["feels_like"].ToString();
                 string humidity = weatherData["main"]["humidity"].ToString();
 
+                // Save weather data to database
                 DateTime executionTime = DateTime.Now;
                 string timeString = executionTime.ToString("yyyy-MM-dd HH:mm:ss");
                 string connectionString = "Server=(localdb)\\mssqllocaldb;Database=FasterWeatherBot;Trusted_Connection=True;";
@@ -56,8 +61,9 @@ public class WeatherServices
                 };
 
                 repository.SaveWeatherHistory(weatherHistory);
-                Console.WriteLine("data saved!");
+                Console.WriteLine("Data saved!");
 
+                // Return formatted weather info
                 return $"🌦 Weather in {city}:\n" +
                        $"🌡 Temperature: {temperature}°C (Feels like {feelsLike}°C)\n" +
                        $"💧 Humidity: {humidity}%\n" +
@@ -69,5 +75,4 @@ public class WeatherServices
             return "⚠ An error occurred while receiving weather data.";
         }
     }
-
 }

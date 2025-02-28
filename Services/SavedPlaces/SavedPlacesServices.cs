@@ -6,8 +6,10 @@ namespace FasterWeatherBot.Services
 {
     internal class SavedPlacesServices
     {
+        // Database connection string
         private static readonly string connectionString = "Server=(localdb)\\mssqllocaldb;Database=FasterWeatherBot;Trusted_Connection=True;";
 
+        // Save or update a user's saved place
         public static async Task SaveOrUpdatePlaceAsync(long userId, string place)
         {
             using var connection = new SqlConnection(connectionString);
@@ -24,6 +26,8 @@ namespace FasterWeatherBot.Services
 
             await connection.ExecuteAsync(query, new { UserId = userId, Place = place });
         }
+
+        // Retrieve all saved places from the database
         public static async Task<IEnumerable<(long UserId, string SavedPlace)>> GetAllSavedPlacesAsync()
         {
             using var connection = new SqlConnection(connectionString);

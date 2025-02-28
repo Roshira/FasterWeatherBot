@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace FasterWeatherBot.Models
 {
+    /// <summary>
+    /// User model.
+    /// </summary>
     internal class Users
     {
         public long Id { get; set; }
