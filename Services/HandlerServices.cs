@@ -82,7 +82,6 @@ namespace FasterWeatherBot.Services
                             waitingForPlace[chatId] = true;
                             await botClient.SendTextMessageAsync(chatId, "➕ Enter the name of the location you want to add:");
                             return;
-
                         case "Login":
                             // Log in the user
                             string userName = user.Username ?? "Unknown";
@@ -91,29 +90,26 @@ namespace FasterWeatherBot.Services
                             await LoginUser.LoginUserAsync(botClient, chatId, userName, languageCode, isBot);
 
                             // Update keyboard after login
-                            var newKeyboard = new ReplyKeyboardMarkup(new[]
+                            var loggedInKeyboard = new ReplyKeyboardMarkup(new[]
                             {
-                                new KeyboardButton[] { "Weather" },
-                                new KeyboardButton[] { "Your saved location" },
-                                new KeyboardButton[] { "Add location" }
-                            })
+        new KeyboardButton[] { "Weather" },
+        new KeyboardButton[] { "Your saved location" },
+        new KeyboardButton[] { "Add location" }
+    })
                             {
                                 ResizeKeyboard = true,
                                 OneTimeKeyboard = false
                             };
 
-                            await botClient.SendTextMessageAsync(chatId, "✅ You are successfully logged in!");
-                            await botClient.SendTextMessageAsync(chatId, "", replyMarkup: newKeyboard);
+                            await botClient.SendTextMessageAsync(chatId, "✅ You are successfully logged in!", replyMarkup: loggedInKeyboard);
                             return;
 
                         default:
-                            // Default keyboard options
-                            var replyKeyboard = new ReplyKeyboardMarkup(new[]
+                            // Default keyboard options (visible before login)
+                            var defaultKeyboard = new ReplyKeyboardMarkup(new[]
                             {
-                                new KeyboardButton[] { "Weather" },
-                                new KeyboardButton[] { "Your saved location" },
-                                new KeyboardButton[] { "Add location" }
-                            })
+        new KeyboardButton[] { "Weather" }
+    })
                             {
                                 ResizeKeyboard = true,
                                 OneTimeKeyboard = false
@@ -122,13 +118,23 @@ namespace FasterWeatherBot.Services
                             // Add login button if user is not registered
                             if (!userExists)
                             {
-                                replyKeyboard.Keyboard = replyKeyboard.Keyboard.Append(new KeyboardButton[] { "Login" }).ToArray();
+                                defaultKeyboard.Keyboard = defaultKeyboard.Keyboard.Append(new KeyboardButton[] { "Login" }).ToArray();
+                            }
+                            else
+                            {
+                                // If the user is logged in, update the keyboard with additional options
+                                defaultKeyboard.Keyboard = new[]
+                                {
+            new KeyboardButton[] { "Weather" },
+            new KeyboardButton[] { "Your saved location" },
+            new KeyboardButton[] { "Add location" }
+        };
                             }
 
                             await botClient.SendTextMessageAsync(
                                 chatId,
                                 userExists ? "Welcome back!" : "Welcome! Please login.",
-                                replyMarkup: replyKeyboard
+                                replyMarkup: defaultKeyboard
                             );
                             return;
                     }
