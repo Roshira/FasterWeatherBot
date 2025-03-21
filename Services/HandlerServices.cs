@@ -14,6 +14,11 @@ namespace FasterWeatherBot.Services
 {
     internal class HandlerServices
     {
+
+        private const string WeatherCommand = "Weather";
+        private const string LocationCommand = "Your saved location";
+        private const string AddCommand = "Add location";
+
         // Dictionaries to track users waiting for input
         private static Dictionary<long, bool> waitingForCity = new Dictionary<long, bool>();
         private static Dictionary<long, bool> waitingForPlace = new Dictionary<long, bool>();
@@ -58,12 +63,12 @@ namespace FasterWeatherBot.Services
 
                     switch (text)
                     {
-                        case "Weather":
+                        case WeatherCommand:
                             waitingForCity[chatId] = true;
                             await botClient.SendTextMessageAsync(chatId, "📍 Enter location to get the weather:");
                             return;
 
-                        case "Your saved location":
+                        case LocationCommand:
                             var savedPlaces = await SavedPlacesServices.GetAllSavedPlacesAsync();
                             var userSavedPlace = savedPlaces.FirstOrDefault(sp => sp.UserId == chatId);
 
@@ -78,7 +83,7 @@ namespace FasterWeatherBot.Services
                             }
                             return;
 
-                        case "Add location":
+                        case AddCommand:
                             waitingForPlace[chatId] = true;
                             await botClient.SendTextMessageAsync(chatId, "➕ Enter the name of the location you want to add:");
                             return;
@@ -92,9 +97,9 @@ namespace FasterWeatherBot.Services
                             // Update keyboard after login
                             var loggedInKeyboard = new ReplyKeyboardMarkup(new[]
                             {
-        new KeyboardButton[] { "Weather" },
-        new KeyboardButton[] { "Your saved location" },
-        new KeyboardButton[] { "Add location" }
+        new KeyboardButton[] { WeatherCommand },
+        new KeyboardButton[] { LocationCommand },
+        new KeyboardButton[] { AddCommand }
     })
                             {
                                 ResizeKeyboard = true,
@@ -108,7 +113,7 @@ namespace FasterWeatherBot.Services
                             // Default keyboard options (visible before login)
                             var defaultKeyboard = new ReplyKeyboardMarkup(new[]
                             {
-        new KeyboardButton[] { "Weather" }
+        new KeyboardButton[] { WeatherCommand }
     })
                             {
                                 ResizeKeyboard = true,
@@ -125,9 +130,9 @@ namespace FasterWeatherBot.Services
                                 // If the user is logged in, update the keyboard with additional options
                                 defaultKeyboard.Keyboard = new[]
                                 {
-            new KeyboardButton[] { "Weather" },
-            new KeyboardButton[] { "Your saved location" },
-            new KeyboardButton[] { "Add location" }
+            new KeyboardButton[] { WeatherCommand },
+            new KeyboardButton[] { LocationCommand },
+            new KeyboardButton[] { AddCommand }
         };
                             }
 

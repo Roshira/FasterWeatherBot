@@ -36,7 +36,7 @@ public class WeatherBotController : ControllerBase
         var user = await connection.QueryFirstOrDefaultAsync<Users>("SELECT * FROM Users WHERE Id = @Id", new { Id = userId });
         if (user == null) return NotFound("User not found");
 
-        var history = await connection.QueryAsync<WeatherHistoryDate>("SELECT * FROM WeatherHistory WHERE UserId = @UserId", new { UserId = userId });
+        var history = await connection.QueryAsync<WeatherHistoryEntry>("SELECT * FROM WeatherHistory WHERE UserId = @UserId", new { UserId = userId });
 
         return Ok(new { user, history });
     }

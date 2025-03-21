@@ -17,26 +17,26 @@ public class ConfigService
     {
         var config = LoadConfiguration();
 
-        var Data = config["TelegramSettings:Database"];
+        var data = config["TelegramSettings:Database"];
 
-        if (string.IsNullOrEmpty(Data))
+        if (string.IsNullOrEmpty(data))
         {
             Console.WriteLine("We haven't this appsettings.json.");
             return "error";
         }
-        return Data;
+        return data;
     }
     public static string WeatherKeyLoader()
     {
         var config = LoadConfiguration();
 
-        var WeatherKey = config["TelegramSettings:WeatherKey"];
+        var weatherKey = config["TelegramSettings:WeatherKey"];
 
-        if (string.IsNullOrEmpty(WeatherKey))
+        if (string.IsNullOrEmpty(weatherKey))
         {
             Console.WriteLine("We haven't this appsettings.json.");
             return "error";
         }
-        return WeatherKey;
+        return weatherKey;
     }
 }

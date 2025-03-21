@@ -9,11 +9,11 @@ using FasterWeatherBot.Models;
 
 public class WeatherServices
 {
-    private static readonly string apiUrl = "https://api.openweathermap.org/data/2.5/weather?q={0}&appid={1}&units=metric&lang=en";
+    private static readonly string _apiUrl = "https://api.openweathermap.org/data/2.5/weather?q={0}&appid={1}&units=metric&lang=en";
 
 
 
-    public static async Task<string> GetWeatherAsync(string city, long UserId)
+    public static async Task<string> GetWeatherAsync(string city, long userId)
     {
 
         try
@@ -22,7 +22,7 @@ public class WeatherServices
             {
 
                 // Send request to the weather API
-                string requestUrl = string.Format(apiUrl, city, ConfigService.WeatherKeyLoader());
+                string requestUrl = string.Format(_apiUrl, city, ConfigService.WeatherKeyLoader());
                 HttpResponseMessage response = await client.GetAsync(requestUrl);
 
                 if (!response.IsSuccessStatusCode)
@@ -46,9 +46,9 @@ public class WeatherServices
 
                 var repository = new WeatherHistoryRepository(connectionString);
 
-                var weatherHistory = new WeatherHistoryDate
+                var weatherHistory = new WeatherHistoryEntry
                 {
-                    UserId = UserId,
+                    UserId = userId,
                     City = city,
                     Temperature = $"{temperature}°C",
                     Humidity = $"{humidity}%",

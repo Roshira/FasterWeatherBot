@@ -13,7 +13,7 @@ namespace FasterWeatherBot.Models
             _connectionString = connectionString;
         }
 
-        public void SaveWeatherHistory(WeatherHistoryDate weather)
+        public void SaveWeatherHistory(WeatherHistoryEntry weather)
         {
             using (IDbConnection db = new SqlConnection(_connectionString))
             {

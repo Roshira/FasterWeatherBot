@@ -9,7 +9,7 @@ namespace FasterWeatherBot.Models
     /// <summary>
     /// Weather query history model.
     /// </summary>
-    public class WeatherHistoryDate
+    public class WeatherHistoryEntry
     {
         public long UserId { get; set; }
         public string City { get; set; }

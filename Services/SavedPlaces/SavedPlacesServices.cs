@@ -7,12 +7,12 @@ namespace FasterWeatherBot.Services
     internal class SavedPlacesServices
     {
         // Database connection string
-        private static readonly string connectionString = ConfigService.DataBaseLoader();
+        private static readonly string _connectionString = ConfigService.DataBaseLoader();
 
         // Save or update a user's saved place
         public static async Task SaveOrUpdatePlaceAsync(long userId, string place)
         {
-            using var connection = new SqlConnection(connectionString);
+            using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
             string query = @"
@@ -30,7 +30,7 @@ namespace FasterWeatherBot.Services
         // Retrieve all saved places from the database
         public static async Task<IEnumerable<(long UserId, string SavedPlace)>> GetAllSavedPlacesAsync()
         {
-            using var connection = new SqlConnection(connectionString);
+            using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
             string query = "SELECT IdUser, SavedPlace FROM SavedPlaces";
