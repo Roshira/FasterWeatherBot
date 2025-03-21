@@ -9,24 +9,20 @@ using FasterWeatherBot.Models;
 
 public class WeatherServices
 {
-    // OpenWeather API key and URL
-    private static readonly string apiKey = "697d66fe6ada429bb0f761f1dce55573";
     private static readonly string apiUrl = "https://api.openweathermap.org/data/2.5/weather?q={0}&appid={1}&units=metric&lang=en";
-    private readonly string _connectionString;
 
-    public WeatherServices(string connectionString)
-    {
-        _connectionString = connectionString;
-    }
+
 
     public static async Task<string> GetWeatherAsync(string city, long UserId)
     {
+
         try
         {
             using (HttpClient client = new HttpClient())
             {
+
                 // Send request to the weather API
-                string requestUrl = string.Format(apiUrl, city, apiKey);
+                string requestUrl = string.Format(apiUrl, city, ConfigService.WeatherKeyLoader());
                 HttpResponseMessage response = await client.GetAsync(requestUrl);
 
                 if (!response.IsSuccessStatusCode)
@@ -46,7 +42,7 @@ public class WeatherServices
                 // Save weather data to database
                 DateTime executionTime = DateTime.Now;
                 string timeString = executionTime.ToString("yyyy-MM-dd HH:mm:ss");
-                string connectionString = "Server=(localdb)\\mssqllocaldb;Database=FasterWeatherBot;Trusted_Connection=True;";
+                string connectionString = ConfigService.DataBaseLoader();
 
                 var repository = new WeatherHistoryRepository(connectionString);
 

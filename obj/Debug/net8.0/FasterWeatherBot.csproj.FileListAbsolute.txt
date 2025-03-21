@@ -33,3 +33,4 @@ C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Swashbuckle.AspNetC
 C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
 C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\FasterWeatherBot.xml
 C:\Users\DELL\source\repos\FasterWeatherBot\obj\Debug\net8.0\FasterWeatherBot.xml
+C:\Users\DELL\source\repos\FasterWeatherBot\bin\Debug\net8.0\appsettings.json

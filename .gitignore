@@ -3,6 +3,7 @@
 config.json
 settings.py
 .vs
+.json
 
 # Ігноруємо базу даних
 *.sqlite

@@ -7,7 +7,7 @@ namespace FasterWeatherBot.Services
     internal class SavedPlacesServices
     {
         // Database connection string
-        private static readonly string connectionString = "Server=(localdb)\\mssqllocaldb;Database=FasterWeatherBot;Trusted_Connection=True;";
+        private static readonly string connectionString = ConfigService.DataBaseLoader();
 
         // Save or update a user's saved place
         public static async Task SaveOrUpdatePlaceAsync(long userId, string place)

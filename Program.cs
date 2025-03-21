@@ -7,22 +7,31 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http;
+
 
 class Program
 {
     private static ITelegramBotClient _botClient;
     private static ReceiverOptions _receiverOptions;
-
     public static async Task Main(string[] args)
     {
         // Create a WebApplication builder
         var builder = WebApplication.CreateBuilder(args);
+        var config = ConfigService.LoadConfiguration();
 
-        // Initialize Telegram bot client with the given token
-        var botToken = new TelegramBotClient("7918056211:AAGd-cQQDTd2gnfUlJtTZF5jzeflRP3At3w");
+        var botToken = config["TelegramSettings:BotToken"];
+
+        if (string.IsNullOrEmpty(botToken))
+        {
+            Console.WriteLine("We haven't this appsettings.json.");
+            return;
+        }
+        var bot = new TelegramBotClient(botToken);
 
         // Register the bot client in the DI container
-        builder.Services.AddSingleton<ITelegramBotClient>(_ => botToken);
+        builder.Services.AddSingleton<ITelegramBotClient>(_ => bot);
         builder.Services.AddControllers();
 
         // Add Swagger for API documentation

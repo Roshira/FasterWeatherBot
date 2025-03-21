@@ -12,7 +12,7 @@ using System.Linq;
 [Route("api/weatherbot")]
 public class WeatherBotController : ControllerBase
 {
-    private readonly string _connectionString = "Server=(localdb)\\mssqllocaldb;Database=FasterWeatherBot;Trusted_Connection=True;";
+    private readonly string _connectionString = ConfigService.DataBaseLoader();
     private readonly ITelegramBotClient _botClient;
 
     public WeatherBotController(ITelegramBotClient botClient)

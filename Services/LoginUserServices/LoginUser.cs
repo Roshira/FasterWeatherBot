@@ -42,7 +42,7 @@ namespace FasterWeatherBot.Models
         }
         internal static async Task<bool> CheckIfUserExists(long userId)
         {
-            string connectionString = "Server=(localdb)\\mssqllocaldb;Database=FasterWeatherBot;Trusted_Connection=True;";
+            string connectionString = ConfigService.DataBaseLoader();
             using (var db = new SqlConnection(connectionString))
             {
                 var user = await db.QueryFirstOrDefaultAsync<Users>(
@@ -54,7 +54,7 @@ namespace FasterWeatherBot.Models
 
         internal static async Task LoginUserAsync(ITelegramBotClient botClient, long chatId, string userName, string languageCode, bool isBot)
         {
-            string connectionString = "Server=(localdb)\\mssqllocaldb;Database=FasterWeatherBot;Trusted_Connection=True;";
+            string connectionString = ConfigService.DataBaseLoader();
             var loginService = new LoginUser(connectionString);
 
             bool isLoggedIn = await loginService.Login(chatId, userName, languageCode, isBot);
